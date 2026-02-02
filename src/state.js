@@ -1,0 +1,71 @@
+import {
+  PENGUIN_RADIUS,
+  CANNON_X,
+  GRAVITY,
+  BOUNCE_DAMPING,
+  MIN_ENERGY_THRESHOLD,
+  ROLLING_FRICTION,
+  ROLLING_SPEED_MULTIPLIER,
+  ROLLING_THRESHOLD,
+  SPRING_BOOST,
+  MIN_SPRING_DISTANCE,
+  MAX_SPRING_DISTANCE,
+  SPRING_SPAWN_DISTANCE
+} from './constants.js';
+
+/**
+ * Global game state object.
+ * Stores all mutable data for the game instance.
+ */
+export const state = {
+  // Canvas and Context
+  canvas: null,
+  ctx: null,
+
+  // Game Flow
+  gameState: 'start', // 'start', 'aiming', 'power_select', 'flying', 'rolling', 'finished'
+  
+  // Physics Objects
+  penguin: {
+    x: CANNON_X,
+    y: 400 - PENGUIN_RADIUS,
+    vx: 0,
+    vy: 0,
+    mass: 1,
+    isDiving: false
+  },
+  springs: [],
+  
+  // Camera & World
+  cameraX: 0,
+  lastSpringX: 0,
+  maxDistance: 0,
+  GROUND_Y: 400,
+  
+  // Gameplay Variables
+  canJumpFromRoll: true,
+  cannonAngle: -Math.PI / 4,
+  cannonRotationDirection: 1,
+  powerValue: 50,
+  powerDirection: 1,
+  CANNON_Y: 400,
+  
+  // Utilities
+  rng: Math.random,
+  hasShot: false,
+  boomUntil: 0,
+  
+  // Physics Tuning Parameters
+  tuning: {
+    GRAVITY,
+    BOUNCE_DAMPING,
+    MIN_ENERGY_THRESHOLD,
+    ROLLING_FRICTION,
+    ROLLING_SPEED_MULTIPLIER,
+    ROLLING_THRESHOLD,
+    SPRING_BOOST,
+    MIN_SPRING_DISTANCE,
+    MAX_SPRING_DISTANCE,
+    SPRING_SPAWN_DISTANCE
+  }
+};
