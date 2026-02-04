@@ -136,9 +136,15 @@ export function updatePhysics() {
     const kineticEnergy =
       0.5 * state.penguin.mass * (state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
     if (kineticEnergy < state.tuning.MIN_ENERGY_THRESHOLD && Math.abs(state.penguin.vy) < 8) {
-      state.gameState = 'rolling';
-      state.penguin.vy = 0;
-      state.penguin.vx *= state.tuning.ROLLING_SPEED_MULTIPLIER;
+      if (state.canJumpFromRoll) {
+        state.gameState = 'rolling';
+        state.penguin.vy = 0;
+        state.penguin.vx *= state.tuning.ROLLING_SPEED_MULTIPLIER;
+      } else {
+        state.gameState = 'finished';
+        state.penguin.vx = 0;
+        state.penguin.vy = 0;
+      }
     }
   }
   checkSpringCollisions();
