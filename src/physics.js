@@ -130,6 +130,12 @@ export function updatePhysics() {
   const radius = state.metrics.penguinRadius;
   if (state.penguin.y >= state.GROUND_Y - radius) {
     state.penguin.y = state.GROUND_Y - radius;
+    if (state.penguin.isDiving) {
+      state.gameState = 'finished';
+      state.penguin.vx = 0;
+      state.penguin.vy = 0;
+      return;
+    }
     state.penguin.vy = -state.penguin.vy * state.tuning.BOUNCE_DAMPING;
     state.penguin.vx *= 0.95;
     state.penguin.isDiving = false;
