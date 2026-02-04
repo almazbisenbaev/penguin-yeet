@@ -1,6 +1,12 @@
 import {
   PENGUIN_RADIUS,
   CANNON_X,
+  CANNON_WIDTH,
+  CANNON_HEIGHT,
+  POWER_BAR_WIDTH,
+  POWER_BAR_HEIGHT,
+  SPRING_HEIGHT,
+  SPRING_WIDTHS,
   GRAVITY,
   BOUNCE_DAMPING,
   MIN_ENERGY_THRESHOLD,
@@ -21,6 +27,20 @@ export const state = {
   // Canvas and Context
   canvas: null,
   ctx: null,
+  viewportWidth: 0,
+  viewportHeight: 0,
+  dpr: 1,
+  uiScale: 1,
+  metrics: {
+    penguinRadius: PENGUIN_RADIUS,
+    cannonX: CANNON_X,
+    cannonWidth: CANNON_WIDTH,
+    cannonHeight: CANNON_HEIGHT,
+    powerBarWidth: POWER_BAR_WIDTH,
+    powerBarHeight: POWER_BAR_HEIGHT,
+    springHeight: SPRING_HEIGHT,
+    springWidths: [...SPRING_WIDTHS]
+  },
 
   // Game Flow
   gameState: 'start', // 'start', 'aiming', 'power_select', 'flying', 'rolling', 'finished'

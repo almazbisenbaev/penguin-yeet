@@ -1,23 +1,8 @@
 import {
-  GRAVITY,
-  BOUNCE_DAMPING,
-  MIN_ENERGY_THRESHOLD,
-  CANNON_X,
   CANNON_ROTATION_SPEED,
   CANNON_MIN_ANGLE,
   CANNON_MAX_ANGLE,
-  CANNON_WIDTH,
-  POWER_BAR_SPEED,
-  PENGUIN_RADIUS,
-  SPRING_HEIGHT,
-  SPRING_WIDTHS,
-  MIN_SPRING_DISTANCE,
-  MAX_SPRING_DISTANCE,
-  SPRING_SPAWN_DISTANCE,
-  SPRING_BOOST,
-  ROLLING_FRICTION,
-  ROLLING_SPEED_MULTIPLIER,
-  ROLLING_THRESHOLD
+  POWER_BAR_SPEED
 } from './constants.js';
 import { state } from './state.js';
 
@@ -26,17 +11,19 @@ import { state } from './state.js';
  * Maintains a buffer of springs ahead of the camera.
  */
 function generateSprings() {
+  const springHeight = state.metrics.springHeight;
+  const springWidths = state.metrics.springWidths;
   while (state.lastSpringX < state.penguin.x + state.tuning.SPRING_SPAWN_DISTANCE) {
     const randomDistance =
       state.tuning.MIN_SPRING_DISTANCE +
       state.rng() * (state.tuning.MAX_SPRING_DISTANCE - state.tuning.MIN_SPRING_DISTANCE);
     const springX = state.lastSpringX + randomDistance;
-    const springY = state.GROUND_Y - SPRING_HEIGHT;
-    const springWidth = SPRING_WIDTHS[Math.floor(state.rng() * SPRING_WIDTHS.length)];
+    const springY = state.GROUND_Y - springHeight;
+    const widthIndex = Math.floor(state.rng() * springWidths.length);
     state.springs.push({
       x: springX,
       y: springY,
-      width: springWidth,
+      widthIndex,
       used: false,
       animStart: 0
     });
@@ -52,16 +39,18 @@ function generateSprings() {
 function checkSpringCollisions() {
   for (const spring of state.springs) {
     if (spring.used) continue;
-    const activeHeight = SPRING_HEIGHT * 0.2;
+    const springWidth = state.metrics.springWidths[spring.widthIndex ?? 0];
+    const activeHeight = state.metrics.springHeight * 0.2;
     const activeTop = spring.y;
     const activeBottom = spring.y + activeHeight;
-    const activeWidthExtension = spring.width * 0.3;
+    const activeWidthExtension = springWidth * 0.3;
     const activeLeft = spring.x - activeWidthExtension;
-    const activeRight = spring.x + spring.width + activeWidthExtension;
-    const penguinLeft = state.penguin.x - PENGUIN_RADIUS;
-    const penguinRight = state.penguin.x + PENGUIN_RADIUS;
-    const penguinTop = state.penguin.y - PENGUIN_RADIUS;
-    const penguinBottom = state.penguin.y + PENGUIN_RADIUS;
+    const activeRight = spring.x + springWidth + activeWidthExtension;
+    const radius = state.metrics.penguinRadius;
+    const penguinLeft = state.penguin.x - radius;
+    const penguinRight = state.penguin.x + radius;
+    const penguinTop = state.penguin.y - radius;
+    const penguinBottom = state.penguin.y + radius;
     if (
       penguinRight > activeLeft &&
       penguinLeft < activeRight &&
@@ -103,8 +92,8 @@ export function updatePhysics() {
       state.cannonAngle = CANNON_MIN_ANGLE;
       state.cannonRotationDirection = 1;
     }
-    state.penguin.x = CANNON_X + Math.cos(state.cannonAngle) * CANNON_WIDTH;
-    state.penguin.y = state.CANNON_Y + Math.sin(state.cannonAngle) * CANNON_WIDTH;
+    state.penguin.x = state.metrics.cannonX + Math.cos(state.cannonAngle) * state.metrics.cannonWidth;
+    state.penguin.y = state.CANNON_Y + Math.sin(state.cannonAngle) * state.metrics.cannonWidth;
     return;
   }
   if (state.gameState === 'power_select') {
@@ -121,21 +110,22 @@ export function updatePhysics() {
   if (state.gameState === 'rolling') {
     state.penguin.vx *= state.tuning.ROLLING_FRICTION;
     state.penguin.x += state.penguin.vx;
-    state.penguin.y = state.GROUND_Y - PENGUIN_RADIUS;
+    state.penguin.y = state.GROUND_Y - state.metrics.penguinRadius;
     if (Math.abs(state.penguin.vx) < state.tuning.ROLLING_THRESHOLD) {
       state.gameState = 'finished';
     }
-    const distance = Math.max(0, state.penguin.x - CANNON_X);
+    const distance = Math.max(0, state.penguin.x - state.metrics.cannonX);
     state.maxDistance = Math.max(state.maxDistance, distance);
-    state.cameraX = Math.max(0, state.penguin.x - state.canvas.width / 3);
+    state.cameraX = Math.max(0, state.penguin.x - state.viewportWidth / 3);
     return;
   }
   if (state.gameState !== 'flying') return;
   state.penguin.vy += state.tuning.GRAVITY;
   state.penguin.x += state.penguin.vx;
   state.penguin.y += state.penguin.vy;
-  if (state.penguin.y >= state.GROUND_Y - PENGUIN_RADIUS) {
-    state.penguin.y = state.GROUND_Y - PENGUIN_RADIUS;
+  const radius = state.metrics.penguinRadius;
+  if (state.penguin.y >= state.GROUND_Y - radius) {
+    state.penguin.y = state.GROUND_Y - radius;
     state.penguin.vy = -state.penguin.vy * state.tuning.BOUNCE_DAMPING;
     state.penguin.vx *= 0.95;
     state.penguin.isDiving = false;
@@ -149,7 +139,7 @@ export function updatePhysics() {
   }
   checkSpringCollisions();
   generateSprings();
-  const distance = Math.max(0, state.penguin.x - CANNON_X);
+  const distance = Math.max(0, state.penguin.x - state.metrics.cannonX);
   state.maxDistance = Math.max(state.maxDistance, distance);
-  state.cameraX = Math.max(0, state.penguin.x - state.canvas.width / 3);
+  state.cameraX = Math.max(0, state.penguin.x - state.viewportWidth / 3);
 }

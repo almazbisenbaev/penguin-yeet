@@ -1,11 +1,8 @@
 import {
-  CANNON_X,
   CANNON_WIDTH,
   CANNON_HEIGHT,
-  CANNON_ROTATION_SPEED,
-  CANNON_MIN_ANGLE,
-  CANNON_MAX_ANGLE,
-  POWER_BAR_SPEED,
+  POWER_BAR_WIDTH,
+  POWER_BAR_HEIGHT,
   MIN_LAUNCH_SPEED,
   MAX_LAUNCH_SPEED,
   VELOCITY_SCALE,
@@ -14,10 +11,21 @@ import {
   DIVE_ANGLE,
   DIVE_BOOST,
   GROUND_Y_RATIO,
-  PENGUIN_RADIUS
+  PENGUIN_RADIUS,
+  SPRING_HEIGHT,
+  SPRING_WIDTHS,
+  MIN_SPRING_DISTANCE,
+  MAX_SPRING_DISTANCE,
+  SPRING_SPAWN_DISTANCE,
+  BASE_VIEWPORT_WIDTH,
+  BASE_VIEWPORT_HEIGHT
 } from './constants.js';
 import { state } from './state.js';
 import seedrandom from 'seedrandom';
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 /**
  * Initializes the game.
@@ -28,7 +36,10 @@ export function init() {
   state.ctx = state.canvas.getContext('2d');
   updateCanvasSize();
   window.addEventListener('resize', updateCanvasSize);
-  state.canvas.addEventListener('click', handleInput);
+  state.canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    handleInput();
+  });
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
       e.preventDefault();
@@ -42,10 +53,19 @@ export function init() {
 
   const playBtn = document.getElementById('play-btn');
   if (playBtn) {
-    playBtn.addEventListener('click', () => {
+    const startGame = () => {
+      if (state.gameState !== 'start') return;
       document.getElementById('start-screen').style.display = 'none';
       document.querySelector('.stats').style.display = 'flex';
       state.gameState = 'aiming';
+    };
+    playBtn.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      startGame();
+    });
+    playBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      startGame();
     });
   }
 }
@@ -68,7 +88,7 @@ export function handleInput() {
   } else if (
     state.gameState === 'flying' &&
     !state.penguin.isDiving &&
-    state.penguin.y < state.GROUND_Y - PENGUIN_RADIUS - 5
+    state.penguin.y < state.GROUND_Y - state.metrics.penguinRadius - 5
   ) {
     state.penguin.isDiving = true;
     const currentSpeed = Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
@@ -92,14 +112,54 @@ export function handleInput() {
  * Also updates ground level and cannon position relative to the new size.
  */
 export function updateCanvasSize() {
-  state.canvas.width = window.innerWidth;
-  state.canvas.height = window.innerHeight;
-  state.GROUND_Y = state.canvas.height * GROUND_Y_RATIO;
+  const container = document.querySelector('.container');
+  const width = Math.max(1, container?.clientWidth || window.innerWidth);
+  const height = Math.max(1, container?.clientHeight || window.innerHeight);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  state.viewportWidth = width;
+  state.viewportHeight = height;
+  state.dpr = dpr;
+  state.canvas.style.width = `${width}px`;
+  state.canvas.style.height = `${height}px`;
+  state.canvas.width = Math.round(width * dpr);
+  state.canvas.height = Math.round(height * dpr);
+  state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const baseScale = Math.min(width / BASE_VIEWPORT_WIDTH, height / BASE_VIEWPORT_HEIGHT);
+  state.uiScale = clamp(baseScale, 0.6, 1.25);
+  const cannonX = Math.max(60 * state.uiScale, width * 0.09);
+
+  state.metrics = {
+    penguinRadius: PENGUIN_RADIUS * state.uiScale,
+    cannonX,
+    cannonWidth: CANNON_WIDTH * state.uiScale,
+    cannonHeight: CANNON_HEIGHT * state.uiScale,
+    powerBarWidth: POWER_BAR_WIDTH * state.uiScale,
+    powerBarHeight: POWER_BAR_HEIGHT * state.uiScale,
+    springHeight: SPRING_HEIGHT * state.uiScale,
+    springWidths: SPRING_WIDTHS.map((size) => size * state.uiScale)
+  };
+
+  const widthScale = clamp(width / BASE_VIEWPORT_WIDTH, 0.7, 1.4);
+  state.tuning.MIN_SPRING_DISTANCE = MIN_SPRING_DISTANCE * widthScale;
+  state.tuning.MAX_SPRING_DISTANCE = MAX_SPRING_DISTANCE * widthScale;
+  state.tuning.SPRING_SPAWN_DISTANCE = SPRING_SPAWN_DISTANCE * widthScale;
+
+  state.GROUND_Y = height * GROUND_Y_RATIO;
   state.CANNON_Y = state.GROUND_Y;
-  if (state.gameState === 'aiming') {
-    state.penguin.x = CANNON_X + Math.cos(state.cannonAngle) * CANNON_WIDTH;
-    state.penguin.y = state.CANNON_Y + Math.sin(state.cannonAngle) * CANNON_WIDTH;
+  const radius = state.metrics.penguinRadius;
+  if (state.gameState === 'aiming' || state.gameState === 'power_select' || state.gameState === 'start') {
+    state.penguin.x = cannonX + Math.cos(state.cannonAngle) * state.metrics.cannonWidth;
+    state.penguin.y = state.CANNON_Y + Math.sin(state.cannonAngle) * state.metrics.cannonWidth;
+  } else {
+    state.penguin.y = Math.min(state.penguin.y, state.GROUND_Y - radius);
   }
+
+  state.springs.forEach((spring) => {
+    if (spring.widthIndex === undefined) spring.widthIndex = 0;
+    spring.y = state.GROUND_Y - state.metrics.springHeight;
+  });
 }
 
 /**
@@ -130,7 +190,7 @@ export function launchPenguin() {
   state.hasShot = true;
   state.boomUntil = Date.now() + 700;
   state.springs = [];
-  state.lastSpringX = CANNON_X;
+  state.lastSpringX = state.metrics.cannonX;
   state.maxDistance = 0;
   state.canJumpFromRoll = true;
 }
@@ -140,8 +200,8 @@ export function launchPenguin() {
  * Resets penguin position, velocity, and game variables.
  */
 export function reset() {
-  state.penguin.x = CANNON_X;
-  state.penguin.y = state.CANNON_Y - PENGUIN_RADIUS;
+  state.penguin.x = state.metrics.cannonX;
+  state.penguin.y = state.CANNON_Y - state.metrics.penguinRadius;
   state.penguin.vx = 0;
   state.penguin.vy = 0;
   state.penguin.isDiving = false;

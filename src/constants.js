@@ -1,6 +1,8 @@
 /**
  * Physics constants
  */
+export const BASE_VIEWPORT_WIDTH = 1200;
+export const BASE_VIEWPORT_HEIGHT = 800;
 export const GRAVITY = 0.12;
 export const GROUND_Y_RATIO = 0.85;
 export const BOUNCE_DAMPING = 0.6;

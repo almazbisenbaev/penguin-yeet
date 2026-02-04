@@ -1,16 +1,4 @@
-import {
-  POWER_BAR_WIDTH,
-  POWER_BAR_HEIGHT,
-  SPRING_HEIGHT,
-  PENGUIN_RADIUS,
-  CANNON_X,
-  CANNON_HEIGHT,
-  CANNON_WIDTH,
-  VELOCITY_SCALE,
-  SPRING_SQUASH_MS,
-  SPRING_STRETCH_MS,
-  SPRING_RECOVER_MS
-} from './constants.js';
+import { VELOCITY_SCALE, SPRING_SQUASH_MS, SPRING_STRETCH_MS, SPRING_RECOVER_MS } from './constants.js';
 import { state } from './state.js';
 import cannonSpriteUrl from '../assets/images/cannon.png';
 
@@ -23,39 +11,55 @@ cannonImage.src = cannonSpriteUrl;
  */
 export function render() {
   const ctx = state.ctx;
-  ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+  const width = state.viewportWidth || state.canvas.width;
+  const height = state.viewportHeight || state.canvas.height;
+  const {
+    penguinRadius,
+    cannonX,
+    cannonWidth,
+    cannonHeight,
+    powerBarWidth,
+    powerBarHeight,
+    springHeight,
+    springWidths
+  } = state.metrics;
+  const uiScale = state.uiScale || 1;
+  const lineWidth = 3 * uiScale;
+  const fontSize = (size) => `${Math.max(12, size * uiScale)}px Arial`;
+
+  ctx.clearRect(0, 0, width, height);
   const skyGradient = ctx.createLinearGradient(0, 0, 0, state.GROUND_Y);
   skyGradient.addColorStop(0, '#87CEEB');
   skyGradient.addColorStop(1, '#E0F6FF');
   ctx.fillStyle = skyGradient;
-  ctx.fillRect(0, 0, state.canvas.width, state.GROUND_Y);
+  ctx.fillRect(0, 0, width, state.GROUND_Y);
   ctx.fillStyle = '#8B7355';
-  ctx.fillRect(0, state.GROUND_Y, state.canvas.width, state.canvas.height - state.GROUND_Y);
+  ctx.fillRect(0, state.GROUND_Y, width, height - state.GROUND_Y);
   ctx.save();
   ctx.translate(-state.cameraX, 0);
   ctx.strokeStyle = '#654321';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(0, state.GROUND_Y);
-  ctx.lineTo(state.cameraX + state.canvas.width, state.GROUND_Y);
+  ctx.lineTo(state.cameraX + width, state.GROUND_Y);
   ctx.stroke();
   if (state.gameState === 'aiming' || state.gameState === 'power_select' || state.gameState === 'start') {
     ctx.save();
-    ctx.translate(CANNON_X, state.CANNON_Y);
+    ctx.translate(cannonX, state.CANNON_Y);
     ctx.rotate(state.cannonAngle);
     if (cannonImage.complete) {
-      ctx.drawImage(cannonImage, 0, -CANNON_HEIGHT / 2, CANNON_WIDTH, CANNON_HEIGHT);
+      ctx.drawImage(cannonImage, 0, -cannonHeight / 2, cannonWidth, cannonHeight);
     } else {
       ctx.fillStyle = '#000';
-      ctx.fillRect(0, -CANNON_HEIGHT / 2, CANNON_WIDTH, CANNON_HEIGHT);
+      ctx.fillRect(0, -cannonHeight / 2, cannonWidth, cannonHeight);
     }
     if (state.hasShot) {
       ctx.strokeStyle = 'red';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(0, -CANNON_HEIGHT / 2, CANNON_WIDTH, CANNON_HEIGHT);
+      ctx.lineWidth = lineWidth;
+      ctx.strokeRect(0, -cannonHeight / 2, cannonWidth, cannonHeight);
       if (Date.now() < state.boomUntil) {
-        ctx.font = '28px Arial';
-        ctx.fillText('💥', CANNON_WIDTH + 10, 8);
+        ctx.font = fontSize(28);
+        ctx.fillText('💥', cannonWidth + 10 * uiScale, 8 * uiScale);
       }
     }
     ctx.restore();
@@ -80,86 +84,87 @@ export function render() {
     } else {
       scaleY = 1;
     }
-    const h = SPRING_HEIGHT * scaleY;
+    const springWidth = springWidths[spring.widthIndex ?? 0];
+    const h = springHeight * scaleY;
     const yTop = state.GROUND_Y - h;
     ctx.fillStyle = spring.used ? '#999' : '#32CD32';
-    ctx.fillRect(spring.x, yTop, spring.width, h);
+    ctx.fillRect(spring.x, yTop, springWidth, h);
     ctx.strokeStyle = spring.used ? '#666' : '#228B22';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1, 2 * uiScale);
     for (let i = 0; i < 5; i++) {
       const y = yTop + (i * h) / 5;
       ctx.beginPath();
       ctx.moveTo(spring.x, y);
-      ctx.lineTo(spring.x + spring.width, y);
+      ctx.lineTo(spring.x + springWidth, y);
       ctx.stroke();
     }
-    ctx.font = '20px Arial';
-    const emojiX = spring.x + spring.width / 2 - 10;
-    ctx.fillText('🌀', emojiX, yTop + h / 2);
+    ctx.font = fontSize(20);
+    const emojiX = spring.x + springWidth / 2 - 10 * uiScale;
+    ctx.fillText('🌀', emojiX, yTop + h / 2 + 6 * uiScale);
   });
   if (state.gameState === 'rolling') {
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.arc(state.penguin.x, state.penguin.y, PENGUIN_RADIUS + 5, 0, Math.PI * 2);
+    ctx.arc(state.penguin.x, state.penguin.y, penguinRadius + 5 * uiScale, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.fillStyle = '#4169E1';
   ctx.beginPath();
-  ctx.arc(state.penguin.x, state.penguin.y, PENGUIN_RADIUS, 0, Math.PI * 2);
+  ctx.arc(state.penguin.x, state.penguin.y, penguinRadius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.font = '25px Arial';
-  ctx.fillText('🐧', state.penguin.x - 12, state.penguin.y + 8);
+  ctx.font = fontSize(24);
+  ctx.fillText('🐧', state.penguin.x - 12 * uiScale, state.penguin.y + 8 * uiScale);
   ctx.restore();
   if (state.gameState === 'power_select') {
-    const barX = state.canvas.width / 2 - POWER_BAR_WIDTH / 2;
-    const barY = 100;
+    const barX = width / 2 - powerBarWidth / 2;
+    const barY = Math.max(20 * uiScale, height * 0.08);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(barX - 10, barY - 10, POWER_BAR_WIDTH + 20, POWER_BAR_HEIGHT + 40);
+    ctx.fillRect(barX - 10 * uiScale, barY - 10 * uiScale, powerBarWidth + 20 * uiScale, powerBarHeight + 40 * uiScale);
     ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
+    ctx.font = fontSize(20);
     ctx.textAlign = 'center';
-    ctx.fillText('POWER', state.canvas.width / 2, barY - 20);
+    ctx.fillText('POWER', width / 2, barY - 20 * uiScale);
     ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(barX, barY, POWER_BAR_WIDTH, POWER_BAR_HEIGHT);
-    const fillWidth = (state.powerValue / 100) * POWER_BAR_WIDTH;
+    ctx.lineWidth = Math.max(1, 2 * uiScale);
+    ctx.strokeRect(barX, barY, powerBarWidth, powerBarHeight);
+    const fillWidth = (state.powerValue / 100) * powerBarWidth;
     ctx.fillStyle = '#4CAF50';
-    ctx.fillRect(barX, barY, fillWidth, POWER_BAR_HEIGHT);
+    ctx.fillRect(barX, barY, fillWidth, powerBarHeight);
     ctx.textAlign = 'left';
   }
   if (state.gameState === 'aiming') {
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = `bold ${Math.max(14, 24 * uiScale)}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('Press SPACE or CLICK to lock angle', state.canvas.width / 2, 100);
+    ctx.fillText('Tap/Click or Space to lock angle', width / 2, Math.max(28 * uiScale, height * 0.12));
     ctx.textAlign = 'left';
   }
   if (state.gameState === 'finished') {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
-    const modalWidth = 400;
-    const modalHeight = 250;
-    const modalX = state.canvas.width / 2 - modalWidth / 2;
-    const modalY = state.canvas.height / 2 - modalHeight / 2;
+    ctx.fillRect(0, 0, width, height);
+    const modalWidth = Math.min(420 * uiScale, width * 0.85);
+    const modalHeight = Math.min(260 * uiScale, height * 0.6);
+    const modalX = width / 2 - modalWidth / 2;
+    const modalY = height / 2 - modalHeight / 2;
     ctx.fillStyle = 'white';
     ctx.fillRect(modalX, modalY, modalWidth, modalHeight);
     ctx.fillStyle = '#333';
-    ctx.font = 'bold 36px Arial';
+    ctx.font = `bold ${Math.max(18, 36 * uiScale)}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('Game Over!', state.canvas.width / 2, modalY + 60);
+    ctx.fillText('Game Over!', width / 2, modalY + 60 * uiScale);
     const distance = Math.max(0, Math.round(state.maxDistance / 10));
-    ctx.font = 'bold 48px Arial';
+    ctx.font = `bold ${Math.max(22, 48 * uiScale)}px Arial`;
     ctx.fillStyle = '#4CAF50';
-    ctx.fillText(distance + 'm', state.canvas.width / 2, modalY + 120);
-    const buttonWidth = 200;
-    const buttonHeight = 50;
-    const buttonX = state.canvas.width / 2 - buttonWidth / 2;
-    const buttonY = modalY + modalHeight - 80;
+    ctx.fillText(distance + 'm', width / 2, modalY + 120 * uiScale);
+    const buttonWidth = Math.min(220 * uiScale, modalWidth * 0.7);
+    const buttonHeight = Math.max(40 * uiScale, modalHeight * 0.2);
+    const buttonX = width / 2 - buttonWidth / 2;
+    const buttonY = modalY + modalHeight - buttonHeight - 24 * uiScale;
     ctx.fillStyle = '#4CAF50';
     ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText('Play Again', state.canvas.width / 2, buttonY + 33);
+    ctx.font = `bold ${Math.max(14, 24 * uiScale)}px Arial`;
+    ctx.fillText('Play Again', width / 2, buttonY + buttonHeight * 0.65);
     ctx.textAlign = 'left';
   }
   updateStats();
