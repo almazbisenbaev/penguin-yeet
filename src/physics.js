@@ -62,9 +62,13 @@ function checkSpringCollisions() {
         Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy),
         state.tuning.SPRING_BOOST
       );
-      const angle = Math.PI / 4;
-      state.penguin.vx = speed * Math.cos(angle);
-      state.penguin.vy = -speed * Math.sin(angle);
+      const targetAngle = Math.PI / 4;
+      const currentAngle = Math.atan2(Math.abs(state.penguin.vy), Math.abs(state.penguin.vx));
+      const nudgeFactor = 0.35;
+      const adjustedAngle = currentAngle + (targetAngle - currentAngle) * nudgeFactor;
+      const directionX = state.penguin.vx >= 0 ? 1 : -1;
+      state.penguin.vx = directionX * speed * Math.cos(adjustedAngle);
+      state.penguin.vy = -speed * Math.sin(adjustedAngle);
       spring.used = true;
       state.canJumpFromRoll = true;
       state.penguin.isDiving = false;
