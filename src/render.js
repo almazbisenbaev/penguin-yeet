@@ -108,12 +108,55 @@ export function render() {
     ctx.arc(state.penguin.x, state.penguin.y, penguinRadius + 5 * uiScale, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  const speed = Math.hypot(state.penguin.vx, state.penguin.vy);
+  const hasSpeed = speed > 0.5;
+  const visualDiveMultiplier = 3;
+  const renderX = state.penguin.isDiving && hasSpeed
+    ? state.penguin.x + state.penguin.vx * (visualDiveMultiplier - 1)
+    : state.penguin.x;
+  const renderY = state.penguin.isDiving && hasSpeed
+    ? state.penguin.y + state.penguin.vy * (visualDiveMultiplier - 1)
+    : state.penguin.y;
+  if (state.penguin.isDiving && hasSpeed) {
+    const dx = state.penguin.vx / speed;
+    const dy = state.penguin.vy / speed;
+    const length = Math.min(140 * uiScale, 50 * uiScale + speed * 3.2);
+    const offset = 10 * uiScale;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = Math.max(1.5, 3 * uiScale);
+    for (let i = -2; i <= 2; i++) {
+      const px = renderX - dy * offset * i;
+      const py = renderY + dx * offset * i;
+      ctx.beginPath();
+      ctx.moveTo(px - dx * 8 * uiScale, py - dy * 8 * uiScale);
+      ctx.lineTo(px - dx * length, py - dy * length);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(135, 206, 235, 0.6)';
+    ctx.lineWidth = Math.max(1, 2 * uiScale);
+    ctx.arc(renderX, renderY, penguinRadius + 10 * uiScale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const drawAngle = state.penguin.isDiving && hasSpeed ? Math.atan2(state.penguin.vy, state.penguin.vx) : 0;
+  ctx.save();
+  ctx.translate(renderX, renderY);
+  if (state.penguin.isDiving && hasSpeed) {
+    const maxTilt = Math.PI / 2.4;
+    const tilt = Math.max(-maxTilt, Math.min(maxTilt, drawAngle));
+    ctx.rotate(tilt);
+  }
   ctx.fillStyle = '#4169E1';
   ctx.beginPath();
-  ctx.arc(state.penguin.x, state.penguin.y, penguinRadius, 0, Math.PI * 2);
+  ctx.arc(0, 0, penguinRadius, 0, Math.PI * 2);
   ctx.fill();
   ctx.font = fontSize(24);
-  ctx.fillText('🐧', state.penguin.x - 12 * uiScale, state.penguin.y + 8 * uiScale);
+  ctx.fillText('🐧', -12 * uiScale, 8 * uiScale);
+  ctx.restore();
   ctx.restore();
   if (state.gameState === 'power_select') {
     const barX = width / 2 - powerBarWidth / 2;

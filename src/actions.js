@@ -9,7 +9,6 @@ import {
   JUMP_SPEED,
   JUMP_ANGLE,
   DIVE_ANGLE,
-  DIVE_BOOST,
   GROUND_Y_RATIO,
   PENGUIN_RADIUS,
   SPRING_HEIGHT,
@@ -88,14 +87,15 @@ export function handleInput() {
   } else if (
     state.gameState === 'flying' &&
     !state.penguin.isDiving &&
-    state.penguin.y < state.GROUND_Y - state.metrics.penguinRadius - 5
+    state.penguin.y < state.GROUND_Y - state.metrics.penguinRadius
   ) {
     state.penguin.isDiving = true;
     const currentSpeed = Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
-    const boostedSpeed = currentSpeed * DIVE_BOOST;
     const angleRad = (DIVE_ANGLE * Math.PI) / 180;
-    state.penguin.vx = boostedSpeed * Math.cos(angleRad);
-    state.penguin.vy = boostedSpeed * Math.sin(angleRad);
+    const directionX = state.penguin.vx >= 0 ? 1 : -1;
+    const speed = Math.max(0.001, currentSpeed);
+    state.penguin.vx = directionX * speed * Math.cos(angleRad);
+    state.penguin.vy = speed * Math.sin(angleRad);
   } else if (state.gameState === 'rolling' && state.canJumpFromRoll) {
     const angleRad = (JUMP_ANGLE * Math.PI) / 180;
     state.penguin.vy = -JUMP_SPEED * Math.sin(angleRad);
