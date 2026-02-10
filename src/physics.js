@@ -41,8 +41,8 @@ function checkSpringCollisions() {
     if (spring.used) continue;
     const springWidth = state.metrics.springWidths[spring.widthIndex ?? 0];
     const activeHeight = state.metrics.springHeight * 0.2;
-    const activeTop = spring.y;
-    const activeBottom = spring.y + activeHeight;
+    const activeTop = spring.y + state.metrics.springHeight * 0.15;
+    const activeBottom = activeTop + activeHeight;
     const activeWidthExtension = springWidth * 0.3;
     const activeLeft = spring.x - activeWidthExtension;
     const activeRight = spring.x + springWidth + activeWidthExtension;
@@ -58,10 +58,9 @@ function checkSpringCollisions() {
       penguinTop < activeBottom &&
       state.penguin.vy >= 0
     ) {
-      const speed = Math.max(
-        Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy),
-        state.tuning.SPRING_BOOST
-      );
+      const base = Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
+      const boosted = base * state.tuning.SPRING_SPEED_MULTIPLIER;
+      const speed = Math.min(boosted, state.tuning.SPRING_SPEED_CAP);
       const targetAngle = Math.PI / 4;
       const currentAngle = Math.atan2(Math.abs(state.penguin.vy), Math.abs(state.penguin.vx));
       const nudgeFactor = 0.35;

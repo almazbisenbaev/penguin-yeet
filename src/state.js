@@ -16,7 +16,9 @@ import {
   SPRING_BOOST,
   MIN_SPRING_DISTANCE,
   MAX_SPRING_DISTANCE,
-  SPRING_SPAWN_DISTANCE
+  SPRING_SPAWN_DISTANCE,
+  SPRING_SPEED_MULTIPLIER,
+  SPRING_SPEED_CAP
 } from './constants.js';
 
 /**
@@ -74,6 +76,7 @@ export const state = {
   rng: Math.random,
   hasShot: false,
   boomUntil: 0,
+  lastJumpAt: 0,
   
   // Physics Tuning Parameters
   tuning: {
@@ -86,6 +89,8 @@ export const state = {
     SPRING_BOOST,
     MIN_SPRING_DISTANCE,
     MAX_SPRING_DISTANCE,
-    SPRING_SPAWN_DISTANCE
+    SPRING_SPAWN_DISTANCE,
+    SPRING_SPEED_MULTIPLIER,
+    SPRING_SPEED_CAP
   }
 };

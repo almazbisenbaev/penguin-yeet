@@ -102,6 +102,7 @@ export function handleInput() {
     state.penguin.vx += JUMP_SPEED * Math.cos(angleRad);
     state.gameState = 'flying';
     state.canJumpFromRoll = false;
+    state.lastJumpAt = Date.now();
   } else if (state.gameState === 'finished') {
     reset();
   }
@@ -174,6 +175,7 @@ export function handleJumpInput() {
     state.penguin.vx += JUMP_SPEED * Math.cos(angleRad);
     state.gameState = 'flying';
     state.canJumpFromRoll = false;
+    state.lastJumpAt = Date.now();
   }
 }
 

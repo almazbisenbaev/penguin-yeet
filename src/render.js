@@ -169,6 +169,37 @@ export function render() {
     ctx.fill();
   }
   ctx.restore();
+  const now = Date.now();
+  let label = 'flying';
+  if (state.gameState === 'start') label = 'initial';
+  else if (state.gameState === 'aiming') label = 'aiming';
+  else if (state.gameState === 'power_select') label = 'power';
+  else if (state.gameState === 'rolling') label = 'rolling';
+  else if (state.gameState === 'finished') label = 'finished';
+  else if (state.gameState === 'flying') {
+    if (state.penguin.isDiving) label = 'diving';
+    else if (now - (state.lastJumpAt || 0) < 400) label = 'jumping';
+    else if (state.penguin.vy >= 0) label = 'falling';
+    else label = 'flying';
+  }
+  let color = '#00FF00';
+  let lw = Math.max(2, 3 * uiScale);
+  if (label === 'initial') { color = '#1E90FF'; lw = Math.max(2, 3 * uiScale); }
+  else if (label === 'aiming') { color = '#FFD700'; lw = Math.max(2, 3 * uiScale); }
+  else if (label === 'power') { color = '#00CED1'; lw = Math.max(2, 3.5 * uiScale); }
+  else if (label === 'flying') { color = '#32CD32'; lw = Math.max(2, 3.5 * uiScale); }
+  else if (label === 'falling') { color = '#FF8C00'; lw = Math.max(3, 4 * uiScale); }
+  else if (label === 'diving') { color = '#8A2BE2'; lw = Math.max(4, 5 * uiScale); }
+  else if (label === 'jumping') { color = '#FF00FF'; lw = Math.max(4, 5 * uiScale); }
+  else if (label === 'rolling') { color = '#FF0000'; lw = Math.max(3, 4 * uiScale); }
+  else if (label === 'finished') { color = '#808080'; lw = Math.max(2, 3 * uiScale); }
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.arc(renderX, renderY, penguinRadius + 8 * uiScale, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
   ctx.restore();
   if (state.gameState === 'power_select') {
     const barX = width / 2 - powerBarWidth / 2;
