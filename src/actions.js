@@ -127,7 +127,8 @@ export function updateCanvasSize() {
   state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const baseScale = Math.min(width / BASE_VIEWPORT_WIDTH, height / BASE_VIEWPORT_HEIGHT);
-  state.uiScale = clamp(baseScale, 0.6, 1.25);
+  const ZOOM_MULTIPLIER = 1.4;
+  state.uiScale = clamp(baseScale * ZOOM_MULTIPLIER, 0.85, 1.8);
   const cannonX = Math.max(60 * state.uiScale, width * 0.09);
 
   state.metrics = {
