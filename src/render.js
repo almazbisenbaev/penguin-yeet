@@ -149,14 +149,17 @@ export function render() {
     ctx.restore();
   }
 
-  const drawAngle = state.penguin.isDiving && hasSpeed ? Math.atan2(state.penguin.vy, state.penguin.vx) : 0;
+  let drawAngle = 0;
+  if (state.gameState === 'aiming' || state.gameState === 'power_select' || state.gameState === 'start') {
+    drawAngle = state.cannonAngle;
+  } else if (hasSpeed) {
+    drawAngle = Math.atan2(state.penguin.vy, state.penguin.vx);
+  } else {
+    drawAngle = state.penguin.vx >= 0 ? 0 : Math.PI;
+  }
   ctx.save();
   ctx.translate(renderX, renderY);
-  if (state.penguin.isDiving && hasSpeed) {
-    const maxTilt = Math.PI / 2.4;
-    const tilt = Math.max(-maxTilt, Math.min(maxTilt, drawAngle));
-    ctx.rotate(tilt);
-  }
+  ctx.rotate(drawAngle);
   const spriteW = penguinRadius * 2.6;
   const spriteH = penguinRadius * 2.2;
   if (penguinImage.complete) {
