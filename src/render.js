@@ -1,9 +1,12 @@
 import { VELOCITY_SCALE, SPRING_SQUASH_MS, SPRING_STRETCH_MS, SPRING_RECOVER_MS } from './constants.js';
 import { state } from './state.js';
 import cannonSpriteUrl from '../assets/images/cannon.png';
+import penguinSpriteUrl from '../assets/images/penguin-fly.png';
 
 const cannonImage = new Image();
 cannonImage.src = cannonSpriteUrl;
+const penguinImage = new Image();
+penguinImage.src = penguinSpriteUrl;
 
 /**
  * Renders the entire game scene.
@@ -154,12 +157,16 @@ export function render() {
     const tilt = Math.max(-maxTilt, Math.min(maxTilt, drawAngle));
     ctx.rotate(tilt);
   }
-  ctx.fillStyle = '#4169E1';
-  ctx.beginPath();
-  ctx.arc(0, 0, penguinRadius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.font = fontSize(24);
-  ctx.fillText('🐧', -12 * uiScale, 8 * uiScale);
+  const spriteW = penguinRadius * 2.6;
+  const spriteH = penguinRadius * 2.2;
+  if (penguinImage.complete) {
+    ctx.drawImage(penguinImage, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
+  } else {
+    ctx.fillStyle = '#4169E1';
+    ctx.beginPath();
+    ctx.arc(0, 0, penguinRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
   ctx.restore();
   if (state.gameState === 'power_select') {
