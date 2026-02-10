@@ -33,11 +33,15 @@ export function render() {
   skyGradient.addColorStop(1, '#E0F6FF');
   ctx.fillStyle = skyGradient;
   ctx.fillRect(0, 0, width, state.GROUND_Y);
-  ctx.fillStyle = '#8B7355';
+  const snowGradient = ctx.createLinearGradient(0, state.GROUND_Y, 0, height);
+  snowGradient.addColorStop(0, '#FFFFFF');
+  snowGradient.addColorStop(0.5, '#EAF6FF');
+  snowGradient.addColorStop(1, '#D6ECFF');
+  ctx.fillStyle = snowGradient;
   ctx.fillRect(0, state.GROUND_Y, width, height - state.GROUND_Y);
   ctx.save();
   ctx.translate(-state.cameraX, 0);
-  ctx.strokeStyle = '#654321';
+  ctx.strokeStyle = '#A3C9FF';
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(0, state.GROUND_Y);
