@@ -67,6 +67,22 @@ export function init() {
       startGame();
     });
   }
+  const restartBtn = document.getElementById('restart-btn');
+  if (restartBtn) {
+    const restartGame = () => {
+      reset();
+      const finishEl = document.getElementById('finish-screen');
+      if (finishEl) finishEl.style.display = 'none';
+    };
+    restartBtn.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      restartGame();
+    });
+    restartBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      restartGame();
+    });
+  }
 }
 
 /**

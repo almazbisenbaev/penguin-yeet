@@ -17,7 +17,12 @@
             <div>Distance: <span id="distance">0</span>m</div>
             <div>Speed: <span id="speed-display">0</span>m/s</div>
         </div>
-        
+        <div id="finish-screen" style="display: none;">
+            <h1>🏁 Game Over!</h1>
+            <div id="final-distance" style="font-weight: bold; color: #4CAF50; font-size: clamp(1.2rem, 4vw, 2.2rem); margin-bottom: clamp(1rem, 3vw, 2rem); font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;">0m</div>
+            <button id="restart-btn">PLAY AGAIN</button>
+        </div>
+
         <canvas id="gameCanvas"></canvas>
     </div>
     

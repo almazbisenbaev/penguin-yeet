@@ -2,6 +2,7 @@ import { VELOCITY_SCALE, SPRING_SQUASH_MS, SPRING_STRETCH_MS, SPRING_RECOVER_MS 
 import { state } from './state.js';
 import cannonSpriteUrl from '../assets/images/cannon.png';
 import penguinSpriteUrl from '../assets/images/penguin-fly.png';
+import penguinDiveSpriteUrl from '../assets/images/penguin-dive.png';
 import ballSpriteUrl from '../assets/images/ball.png';
 
 const cannonImage = new Image();
@@ -10,6 +11,8 @@ const penguinImage = new Image();
 penguinImage.src = penguinSpriteUrl;
 const ballImage = new Image();
 ballImage.src = ballSpriteUrl;
+const penguinDiveImage = new Image();
+penguinDiveImage.src = penguinDiveSpriteUrl;
 
 /**
  * Renders the entire game scene.
@@ -160,8 +163,10 @@ export function render() {
   ctx.rotate(drawAngle);
   const spriteW = penguinRadius * 2.6;
   const spriteH = penguinRadius * 2.2;
-  if (penguinImage.complete) {
-    ctx.drawImage(penguinImage, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
+  const useDive = state.penguin.isDiving && penguinDiveImage.complete;
+  const img = useDive ? penguinDiveImage : penguinImage;
+  if (img.complete) {
+    ctx.drawImage(img, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
   } else {
     ctx.fillStyle = '#4169E1';
     ctx.beginPath();
@@ -187,19 +192,19 @@ export function render() {
   if (label === 'initial') { color = '#1E90FF'; lw = Math.max(2, 3 * uiScale); }
   else if (label === 'aiming') { color = '#FFD700'; lw = Math.max(2, 3 * uiScale); }
   else if (label === 'power') { color = '#00CED1'; lw = Math.max(2, 3.5 * uiScale); }
-  else if (label === 'flying') { color = '#32CD32'; lw = Math.max(2, 3.5 * uiScale); }
   else if (label === 'falling') { color = '#FF8C00'; lw = Math.max(3, 4 * uiScale); }
-  else if (label === 'diving') { color = '#8A2BE2'; lw = Math.max(4, 5 * uiScale); }
   else if (label === 'jumping') { color = '#FF00FF'; lw = Math.max(4, 5 * uiScale); }
   else if (label === 'rolling') { color = '#FF0000'; lw = Math.max(3, 4 * uiScale); }
   else if (label === 'finished') { color = '#808080'; lw = Math.max(2, 3 * uiScale); }
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lw;
-  ctx.beginPath();
-  ctx.arc(renderX, renderY, penguinRadius + 8 * uiScale, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
+  if (label !== 'flying' && label !== 'diving') {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.arc(renderX, renderY, penguinRadius + 8 * uiScale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
   ctx.restore();
   if (state.gameState === 'power_select') {
     const barX = width / 2 - powerBarWidth / 2;
@@ -225,33 +230,18 @@ export function render() {
     ctx.fillText('Tap/Click or Space to lock angle', width / 2, Math.max(28 * uiScale, height * 0.12));
     ctx.textAlign = 'left';
   }
-  if (state.gameState === 'finished') {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, width, height);
-    const modalWidth = Math.min(420 * uiScale, width * 0.85);
-    const modalHeight = Math.min(260 * uiScale, height * 0.6);
-    const modalX = width / 2 - modalWidth / 2;
-    const modalY = height / 2 - modalHeight / 2;
-    ctx.fillStyle = 'white';
-    ctx.fillRect(modalX, modalY, modalWidth, modalHeight);
-    ctx.fillStyle = '#333';
-    ctx.font = `bold ${Math.max(18, 36 * uiScale)}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.fillText('Game Over!', width / 2, modalY + 60 * uiScale);
-    const distance = Math.max(0, Math.round(state.maxDistance / 10));
-    ctx.font = `bold ${Math.max(22, 48 * uiScale)}px Arial`;
-    ctx.fillStyle = '#4CAF50';
-    ctx.fillText(distance + 'm', width / 2, modalY + 120 * uiScale);
-    const buttonWidth = Math.min(220 * uiScale, modalWidth * 0.7);
-    const buttonHeight = Math.max(40 * uiScale, modalHeight * 0.2);
-    const buttonX = width / 2 - buttonWidth / 2;
-    const buttonY = modalY + modalHeight - buttonHeight - 24 * uiScale;
-    ctx.fillStyle = '#4CAF50';
-    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-    ctx.fillStyle = 'white';
-    ctx.font = `bold ${Math.max(14, 24 * uiScale)}px Arial`;
-    ctx.fillText('Play Again', width / 2, buttonY + buttonHeight * 0.65);
-    ctx.textAlign = 'left';
+  const finishEl = document.getElementById('finish-screen');
+  const finalDistanceEl = document.getElementById('final-distance');
+  if (finishEl) {
+    if (state.gameState === 'finished') {
+      finishEl.style.display = 'flex';
+      if (finalDistanceEl) {
+        const distance = Math.max(0, Math.round(state.maxDistance / 10));
+        finalDistanceEl.textContent = `${distance}m`;
+      }
+    } else {
+      finishEl.style.display = 'none';
+    }
   }
   updateStats();
 }

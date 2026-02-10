@@ -14,7 +14,7 @@ export const BOUNCE_DAMPING = 0.6;
 // Energy threshold to transition from bouncing to rolling (with |vy| < 8)
 export const MIN_ENERGY_THRESHOLD = 0.5;
 // Penguin collision/render radius (scaled by uiScale at runtime)
-export const PENGUIN_RADIUS = 15;
+export const PENGUIN_RADIUS = 28.6;
 
 /**
  * Cannon configuration
