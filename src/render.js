@@ -2,11 +2,14 @@ import { VELOCITY_SCALE, SPRING_SQUASH_MS, SPRING_STRETCH_MS, SPRING_RECOVER_MS 
 import { state } from './state.js';
 import cannonSpriteUrl from '../assets/images/cannon.png';
 import penguinSpriteUrl from '../assets/images/penguin-fly.png';
+import ballSpriteUrl from '../assets/images/ball.png';
 
 const cannonImage = new Image();
 cannonImage.src = cannonSpriteUrl;
 const penguinImage = new Image();
 penguinImage.src = penguinSpriteUrl;
+const ballImage = new Image();
+ballImage.src = ballSpriteUrl;
 
 /**
  * Renders the entire game scene.
@@ -94,20 +97,15 @@ export function render() {
     const springWidth = springWidths[spring.widthIndex ?? 0];
     const h = springHeight * scaleY;
     const yTop = state.GROUND_Y - h;
-    ctx.fillStyle = spring.used ? '#999' : '#32CD32';
-    ctx.fillRect(spring.x, yTop, springWidth, h);
-    ctx.strokeStyle = spring.used ? '#666' : '#228B22';
-    ctx.lineWidth = Math.max(1, 2 * uiScale);
-    for (let i = 0; i < 5; i++) {
-      const y = yTop + (i * h) / 5;
-      ctx.beginPath();
-      ctx.moveTo(spring.x, y);
-      ctx.lineTo(spring.x + springWidth, y);
-      ctx.stroke();
+    ctx.save();
+    if (spring.used) ctx.globalAlpha = 0.6;
+    if (ballImage.complete) {
+      ctx.drawImage(ballImage, spring.x, yTop, springWidth, h);
+    } else {
+      ctx.fillStyle = '#32CD32';
+      ctx.fillRect(spring.x, yTop, springWidth, h);
     }
-    ctx.font = fontSize(20);
-    const emojiX = spring.x + springWidth / 2 - 10 * uiScale;
-    ctx.fillText('🌀', emojiX, yTop + h / 2 + 6 * uiScale);
+    ctx.restore();
   });
   if (state.gameState === 'rolling') {
     ctx.fillStyle = 'red';
