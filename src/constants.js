@@ -66,6 +66,9 @@ export const SPRING_LOW_SPEED_MULTIPLIER = 1.25;
 // Minimum speed after applying a low-speed spring boost
 export const SPRING_MIN_SPEED = 3;
 
+// How strongly to correct toward a 45-degree angle on spring hits
+export const SPRING_ANGLE_CORRECTION = 0.6;
+
 // Current speed multiplier applied on spring hit (final speed is clamped by cap)
 export const SPRING_SPEED_MULTIPLIER = 1.2;
 
@@ -86,12 +89,15 @@ export const ROLLING_FRICTION = 0.992;
 export const ROLLING_SPEED_MULTIPLIER = 2.5;
 // Speed threshold to exit rolling to finished state
 export const ROLLING_THRESHOLD = 0.2;
+
 // One-time jump while rolling: magnitude and angle
 export const JUMP_SPEED = 8;
 export const JUMP_ANGLE = 60;
+
 // Dive angle (used when setting dive trajectory); DIVE_BOOST is currently unused
 export const DIVE_ANGLE = 65;
 export const DIVE_BOOST = 2.1;
+
 // Spring hit animation keyframe durations used in render for squash/stretch/recover
 export const SPRING_SQUASH_MS = 150;
 export const SPRING_STRETCH_MS = 180;

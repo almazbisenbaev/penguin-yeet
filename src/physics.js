@@ -36,6 +36,10 @@ function generateSprings() {
  * Checks for collisions between the penguin and springs.
  * Applies a boost if a collision occurs.
  */
+function nudgeAngleToward(currentAngle, targetAngle, factor) {
+  return currentAngle + (targetAngle - currentAngle) * factor;
+}
+
 function checkSpringCollisions() {
   for (const spring of state.springs) {
     if (spring.used) continue;
@@ -68,8 +72,11 @@ function checkSpringCollisions() {
       }
       const targetAngle = Math.PI / 4;
       const currentAngle = Math.atan2(Math.abs(state.penguin.vy), Math.abs(state.penguin.vx));
-      const nudgeFactor = 0.35;
-      const adjustedAngle = currentAngle + (targetAngle - currentAngle) * nudgeFactor;
+      const adjustedAngle = nudgeAngleToward(
+        currentAngle,
+        targetAngle,
+        state.tuning.SPRING_ANGLE_CORRECTION
+      );
       const directionX = state.penguin.vx >= 0 ? 1 : -1;
       state.penguin.vx = directionX * speed * Math.cos(adjustedAngle);
       state.penguin.vy = -speed * Math.sin(adjustedAngle);
