@@ -80,6 +80,7 @@ export const state = {
   hasShot: false,
   boomUntil: 0,
   lastJumpAt: 0,
+  finishedAt: 0,
   
   // Physics Tuning Parameters
   tuning: {

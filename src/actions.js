@@ -207,6 +207,7 @@ export function launchPenguin() {
   state.penguin.vx = speed * Math.cos(state.cannonAngle);
   state.penguin.vy = speed * Math.sin(state.cannonAngle);
   state.gameState = 'flying';
+  state.finishedAt = 0;
   state.hasShot = true;
   state.boomUntil = Date.now() + 700;
   state.springs = [];
@@ -237,4 +238,5 @@ export function reset() {
   state.powerDirection = 1;
   state.hasShot = false;
   state.boomUntil = 0;
+  state.finishedAt = 0;
 }

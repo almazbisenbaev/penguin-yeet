@@ -102,3 +102,6 @@ export const DIVE_BOOST = 1.5;
 export const SPRING_SQUASH_MS = 150;
 export const SPRING_STRETCH_MS = 180;
 export const SPRING_RECOVER_MS = 220;
+
+// Delay before showing the finish screen after the game ends
+export const FINISH_SCREEN_DELAY_MS = 2000;

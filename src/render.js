@@ -1,8 +1,15 @@
-import { VELOCITY_SCALE, SPRING_SQUASH_MS, SPRING_STRETCH_MS, SPRING_RECOVER_MS } from './constants.js';
+import {
+  VELOCITY_SCALE,
+  SPRING_SQUASH_MS,
+  SPRING_STRETCH_MS,
+  SPRING_RECOVER_MS,
+  FINISH_SCREEN_DELAY_MS
+} from './constants.js';
 import { state } from './state.js';
 import cannonSpriteUrl from '../assets/images/cannon.png';
 import penguinSpriteUrl from '../assets/images/penguin-fly.png';
 import penguinDiveSpriteUrl from '../assets/images/penguin-dive.png';
+import penguinLostSpriteUrl from '../assets/images/penguin-lost.png';
 import ballSpriteUrl from '../assets/images/ball.png';
 
 const cannonImage = new Image();
@@ -13,6 +20,8 @@ const ballImage = new Image();
 ballImage.src = ballSpriteUrl;
 const penguinDiveImage = new Image();
 penguinDiveImage.src = penguinDiveSpriteUrl;
+const penguinLostImage = new Image();
+penguinLostImage.src = penguinLostSpriteUrl;
 
 /**
  * Renders the entire game scene.
@@ -117,6 +126,7 @@ export function render() {
     ctx.fill();
   }
 
+  const now = Date.now();
   const speed = Math.hypot(state.penguin.vx, state.penguin.vy);
   const hasSpeed = speed > 0.5;
   const visualDiveMultiplier = 3;
@@ -163,8 +173,15 @@ export function render() {
   ctx.rotate(drawAngle);
   const spriteW = penguinRadius * 2.6;
   const spriteH = penguinRadius * 2.2;
+  const useLost = state.gameState === 'finished' && penguinLostImage.complete;
   const useDive = state.penguin.isDiving && penguinDiveImage.complete;
-  const img = useDive ? penguinDiveImage : penguinImage;
+  const img = useLost ? penguinLostImage : useDive ? penguinDiveImage : penguinImage;
+  if (useLost) {
+    const scaleY = 1 + Math.sin(now / 220) * 0.06;
+    ctx.translate(0, spriteH / 2);
+    ctx.scale(1, scaleY);
+    ctx.translate(0, -spriteH / 2);
+  }
   if (img.complete) {
     ctx.drawImage(img, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
   } else {
@@ -174,7 +191,6 @@ export function render() {
     ctx.fill();
   }
   ctx.restore();
-  const now = Date.now();
   let label = 'flying';
   if (state.gameState === 'start') label = 'initial';
   else if (state.gameState === 'aiming') label = 'aiming';
@@ -196,7 +212,7 @@ export function render() {
   else if (label === 'jumping') { color = '#FF00FF'; lw = Math.max(4, 5 * uiScale); }
   else if (label === 'rolling') { color = '#FF0000'; lw = Math.max(3, 4 * uiScale); }
   else if (label === 'finished') { color = '#808080'; lw = Math.max(2, 3 * uiScale); }
-  if (label !== 'flying' && label !== 'diving') {
+  if (label !== 'flying' && label !== 'diving' && label !== 'finished') {
     ctx.save();
     ctx.strokeStyle = color;
     ctx.lineWidth = lw;
@@ -233,9 +249,11 @@ export function render() {
   const finishEl = document.getElementById('finish-screen');
   const finalDistanceEl = document.getElementById('final-distance');
   if (finishEl) {
-    if (state.gameState === 'finished') {
-      finishEl.style.display = 'flex';
-      if (finalDistanceEl) {
+    if (state.gameState === 'finished' && state.finishedAt) {
+      const elapsed = now - state.finishedAt;
+      const showFinish = elapsed >= FINISH_SCREEN_DELAY_MS;
+      finishEl.style.display = showFinish ? 'flex' : 'none';
+      if (showFinish && finalDistanceEl) {
         const distance = Math.max(0, Math.round(state.maxDistance / 10));
         finalDistanceEl.textContent = `${distance}m`;
       }

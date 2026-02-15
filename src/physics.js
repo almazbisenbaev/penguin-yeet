@@ -40,6 +40,13 @@ function nudgeAngleToward(currentAngle, targetAngle, factor) {
   return currentAngle + (targetAngle - currentAngle) * factor;
 }
 
+function markFinishedState() {
+  if (state.gameState !== 'finished') {
+    state.gameState = 'finished';
+    state.finishedAt = Date.now();
+  }
+}
+
 function checkSpringCollisions() {
   for (const spring of state.springs) {
     if (spring.used) continue;
@@ -127,7 +134,7 @@ export function updatePhysics() {
     state.penguin.x += state.penguin.vx;
     state.penguin.y = state.GROUND_Y - state.metrics.penguinRadius;
     if (Math.abs(state.penguin.vx) < state.tuning.ROLLING_THRESHOLD) {
-      state.gameState = 'finished';
+      markFinishedState();
     }
     const distance = Math.max(0, state.penguin.x - state.metrics.cannonX);
     state.maxDistance = Math.max(state.maxDistance, distance);
@@ -142,7 +149,7 @@ export function updatePhysics() {
   if (state.penguin.y >= state.GROUND_Y - radius) {
     state.penguin.y = state.GROUND_Y - radius;
     if (state.penguin.isDiving) {
-      state.gameState = 'finished';
+      markFinishedState();
       state.penguin.vx = 0;
       state.penguin.vy = 0;
       return;
@@ -158,7 +165,7 @@ export function updatePhysics() {
         state.penguin.vy = 0;
         state.penguin.vx *= state.tuning.ROLLING_SPEED_MULTIPLIER;
       } else {
-        state.gameState = 'finished';
+        markFinishedState();
         state.penguin.vx = 0;
         state.penguin.vy = 0;
       }
