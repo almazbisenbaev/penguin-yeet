@@ -9,6 +9,7 @@ import {
   JUMP_SPEED,
   JUMP_ANGLE,
   DIVE_ANGLE,
+  DIVE_BOOST,
   GROUND_Y_RATIO,
   PENGUIN_RADIUS,
   SPRING_HEIGHT,
@@ -109,7 +110,7 @@ export function handleInput() {
     const currentSpeed = Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
     const angleRad = (DIVE_ANGLE * Math.PI) / 180;
     const directionX = state.penguin.vx >= 0 ? 1 : -1;
-    const speed = Math.max(0.001, currentSpeed);
+    const speed = Math.max(0.001, currentSpeed) * DIVE_BOOST;
     state.penguin.vx = directionX * speed * Math.cos(angleRad);
     state.penguin.vy = speed * Math.sin(angleRad);
   } else if (state.gameState === 'rolling' && state.canJumpFromRoll) {

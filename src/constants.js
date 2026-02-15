@@ -94,9 +94,9 @@ export const ROLLING_THRESHOLD = 0.2;
 export const JUMP_SPEED = 8;
 export const JUMP_ANGLE = 60;
 
-// Dive angle (used when setting dive trajectory); DIVE_BOOST is currently unused
+// Dive angle and speed multiplier used when setting dive trajectory
 export const DIVE_ANGLE = 65;
-export const DIVE_BOOST = 2.1;
+export const DIVE_BOOST = 1.5;
 
 // Spring hit animation keyframe durations used in render for squash/stretch/recover
 export const SPRING_SQUASH_MS = 150;
