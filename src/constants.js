@@ -28,8 +28,8 @@ export const CANNON_HEIGHT = 30;
 // Oscillation speed for auto-aiming in aiming mode (radians/frame)
 export const CANNON_ROTATION_SPEED = 0.02;
 // Allowed aiming angle range
-export const CANNON_MIN_ANGLE = -Math.PI / 2;
-export const CANNON_MAX_ANGLE = 0;
+export const CANNON_MIN_ANGLE = (-65 * Math.PI) / 180;
+export const CANNON_MAX_ANGLE = (-10 * Math.PI) / 180;
 
 /**
  * Power bar configuration
@@ -40,8 +40,8 @@ export const POWER_BAR_HEIGHT = 30;
 // How fast the power value moves back and forth (units/frame)
 export const POWER_BAR_SPEED = 2;
 // Launch speed range used with power percentage, then scaled by VELOCITY_SCALE
-export const MIN_LAUNCH_SPEED = 10;
-export const MAX_LAUNCH_SPEED = 100;
+export const MIN_LAUNCH_SPEED = 20;
+export const MAX_LAUNCH_SPEED = 70;
 
 /**
  * Spring (Boost) configuration
@@ -58,13 +58,13 @@ export const MAX_SPRING_DISTANCE = 1200;
 export const SPRING_SPAWN_DISTANCE = 1000;
 
 // Low-speed threshold for spring boost
-export const SPRING_BOOST = 12;
+export const SPRING_BOOST = 8;
 
 // Multiplier applied when speed is below SPRING_BOOST
-export const SPRING_LOW_SPEED_MULTIPLIER = 1.75;
+export const SPRING_LOW_SPEED_MULTIPLIER = 1.25;
 
 // Minimum speed after applying a low-speed spring boost
-export const SPRING_MIN_SPEED = 5;
+export const SPRING_MIN_SPEED = 3;
 
 // Current speed multiplier applied on spring hit (final speed is clamped by cap)
 export const SPRING_SPEED_MULTIPLIER = 1.2;
