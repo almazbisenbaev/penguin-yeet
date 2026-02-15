@@ -56,10 +56,19 @@ export const MIN_SPRING_DISTANCE = 300;
 export const MAX_SPRING_DISTANCE = 1200;
 // How far ahead springs are generated relative to the penguin
 export const SPRING_SPAWN_DISTANCE = 1000;
-// Legacy minimum boost speed floor (currently not used in boost calculation)
-export const SPRING_BOOST = 5;
+
+// Low-speed threshold for spring boost
+export const SPRING_BOOST = 12;
+
+// Multiplier applied when speed is below SPRING_BOOST
+export const SPRING_LOW_SPEED_MULTIPLIER = 1.75;
+
+// Minimum speed after applying a low-speed spring boost
+export const SPRING_MIN_SPEED = 5;
+
 // Current speed multiplier applied on spring hit (final speed is clamped by cap)
 export const SPRING_SPEED_MULTIPLIER = 1.2;
+
 // Maximum allowed speed after spring boost to prevent excessive acceleration
 export const SPRING_SPEED_CAP = 30;
 

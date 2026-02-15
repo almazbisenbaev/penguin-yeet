@@ -59,8 +59,13 @@ function checkSpringCollisions() {
       state.penguin.vy >= 0
     ) {
       const base = Math.sqrt(state.penguin.vx * state.penguin.vx + state.penguin.vy * state.penguin.vy);
-      const boosted = base * state.tuning.SPRING_SPEED_MULTIPLIER;
-      const speed = Math.min(boosted, state.tuning.SPRING_SPEED_CAP);
+      let speed = base;
+      if (base < state.tuning.SPRING_BOOST) {
+        speed = Math.max(
+          base * state.tuning.SPRING_LOW_SPEED_MULTIPLIER,
+          state.tuning.SPRING_MIN_SPEED
+        );
+      }
       const targetAngle = Math.PI / 4;
       const currentAngle = Math.atan2(Math.abs(state.penguin.vy), Math.abs(state.penguin.vx));
       const nudgeFactor = 0.35;
